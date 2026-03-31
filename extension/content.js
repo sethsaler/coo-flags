@@ -1,5 +1,8 @@
 (function () {
-  const STORAGE_KEY = "cooFlagsHiddenAlpha2";
+  const STORAGE_KEY_HIDDEN = "cooFlagsHiddenAlpha2";
+  const STORAGE_KEY_LOCAL_MAP = "cooFlagsRegionMapLocal";
+  const STORAGE_KEY_REMOTE_MAP = "cooFlagsRegionMapRemote";
+
   const BADGE_CLASS = "coo-flags-badge";
   const HIDDEN_ARTICLE_CLASS = "coo-flags-hidden";
   const DATA_HANDLE = "data-coo-flags-handle";
@@ -41,30 +44,152 @@
 
   /** @type {Set<string>} */
   let hiddenCodes = new Set();
-  /** @type {Map<string, { code: string, emoji: string, label: string }>} */
+  /** @type {Map<string, { code: string, emoji: string, label: string, source?: string }>} */
   const handleToRegion = new Map();
+  /** @type {Record<string, { code: string, label?: string }>} */
+  let localMap = {};
+  /** @type {Record<string, { code: string, label?: string }>} */
+  let remoteMap = {};
 
-  function loadHidden() {
-    chrome.storage.sync.get([STORAGE_KEY], (res) => {
-      const arr = Array.isArray(res[STORAGE_KEY]) ? res[STORAGE_KEY] : [];
-      hiddenCodes = new Set(arr.map((c) => String(c).toUpperCase()));
-      scanVisibleArticles();
-    });
-  }
-
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "sync" || !changes[STORAGE_KEY]) return;
-    const nv = changes[STORAGE_KEY].newValue;
-    const arr = Array.isArray(nv) ? nv : [];
-    hiddenCodes = new Set(arr.map((c) => String(c).toUpperCase()));
-    scanVisibleArticles();
-  });
+  let lookupTimer = null;
+  const pendingCrowdLookup = new Set();
 
   function normalizeHandle(h) {
     if (!h) return "";
     const s = String(h).replace(/^@/, "").trim().toLowerCase();
     return s;
   }
+
+  function regionEntryFromRow(code, label, source) {
+    const up = String(code).toUpperCase();
+    const emoji = CooFlagsCountries.flagFromCode(up) || "";
+    return { code: up, emoji, label: label || "", source: source || "" };
+  }
+
+  function mergeMaps() {
+    handleToRegion.clear();
+    for (const [h, v] of Object.entries(remoteMap)) {
+      const handle = normalizeHandle(h);
+      if (!handle || !v || !v.code) continue;
+      handleToRegion.set(handle, regionEntryFromRow(v.code, v.label, "crowd"));
+    }
+    for (const [h, v] of Object.entries(localMap)) {
+      const handle = normalizeHandle(h);
+      if (!handle || !v || !v.code) continue;
+      handleToRegion.set(handle, regionEntryFromRow(v.code, v.label, "you"));
+    }
+  }
+
+  function loadRegionMaps() {
+    chrome.storage.local.get([STORAGE_KEY_LOCAL_MAP, STORAGE_KEY_REMOTE_MAP], (res) => {
+      localMap =
+        res[STORAGE_KEY_LOCAL_MAP] && typeof res[STORAGE_KEY_LOCAL_MAP] === "object"
+          ? res[STORAGE_KEY_LOCAL_MAP]
+          : {};
+      remoteMap =
+        res[STORAGE_KEY_REMOTE_MAP] && typeof res[STORAGE_KEY_REMOTE_MAP] === "object"
+          ? res[STORAGE_KEY_REMOTE_MAP]
+          : {};
+      mergeMaps();
+      scanVisibleArticles();
+    });
+  }
+
+  function saveLocalMap(next) {
+    chrome.storage.local.set({ [STORAGE_KEY_LOCAL_MAP]: next }, () => {
+      if (chrome.runtime.lastError) return;
+      localMap = next;
+      mergeMaps();
+      scanVisibleArticles();
+    });
+  }
+
+  function saveRemoteMapPatch(patch) {
+    const merged = { ...remoteMap, ...patch };
+    chrome.storage.local.set({ [STORAGE_KEY_REMOTE_MAP]: merged }, () => {
+      if (chrome.runtime.lastError) return;
+      remoteMap = merged;
+      mergeMaps();
+      scanVisibleArticles();
+    });
+  }
+
+  function persistLocalRegion(handle, code, label) {
+    const h = normalizeHandle(handle);
+    if (!h || !code) return;
+    const up = String(code).toUpperCase();
+    const next = { ...localMap, [h]: { code: up, label: label || "" } };
+    saveLocalMap(next);
+    chrome.runtime.sendMessage(
+      {
+        type: "cooFlags:crowdSubmit",
+        payload: { handle: h, code: up, label: label || "" },
+      },
+      () => {
+        void chrome.runtime.lastError;
+      }
+    );
+  }
+
+  function scheduleCrowdLookup(handles) {
+    for (const h of handles) {
+      const hn = normalizeHandle(h);
+      if (!hn) continue;
+      if (handleToRegion.has(hn)) continue;
+      pendingCrowdLookup.add(hn);
+    }
+    if (lookupTimer) clearTimeout(lookupTimer);
+    lookupTimer = setTimeout(runCrowdLookup, 400);
+  }
+
+  function runCrowdLookup() {
+    lookupTimer = null;
+    const need = [...pendingCrowdLookup].filter((h) => !handleToRegion.has(h));
+    pendingCrowdLookup.clear();
+    if (!need.length) return;
+    chrome.runtime.sendMessage({ type: "cooFlags:crowdLookup", handles: need }, (res) => {
+      if (chrome.runtime.lastError || !res || !res.ok || !res.regions) return;
+      /** @type {Record<string, { code: string, label?: string }>} */
+      const patch = {};
+      for (const [h, row] of Object.entries(res.regions)) {
+        const hn = normalizeHandle(h);
+        if (!hn || !row || !row.code) continue;
+        patch[hn] = { code: String(row.code).toUpperCase(), label: row.label || "" };
+      }
+      if (Object.keys(patch).length) saveRemoteMapPatch(patch);
+    });
+  }
+
+  function loadHidden() {
+    chrome.storage.sync.get([STORAGE_KEY_HIDDEN], (res) => {
+      const arr = Array.isArray(res[STORAGE_KEY_HIDDEN]) ? res[STORAGE_KEY_HIDDEN] : [];
+      hiddenCodes = new Set(arr.map((c) => String(c).toUpperCase()));
+      scanVisibleArticles();
+    });
+  }
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "sync" && changes[STORAGE_KEY_HIDDEN]) {
+      const nv = changes[STORAGE_KEY_HIDDEN].newValue;
+      const arr = Array.isArray(nv) ? nv : [];
+      hiddenCodes = new Set(arr.map((c) => String(c).toUpperCase()));
+      scanVisibleArticles();
+    }
+    if (area === "local") {
+      if (changes[STORAGE_KEY_LOCAL_MAP]) {
+        const nv = changes[STORAGE_KEY_LOCAL_MAP].newValue;
+        localMap = nv && typeof nv === "object" ? nv : {};
+      }
+      if (changes[STORAGE_KEY_REMOTE_MAP]) {
+        const nv = changes[STORAGE_KEY_REMOTE_MAP].newValue;
+        remoteMap = nv && typeof nv === "object" ? nv : {};
+      }
+      if (changes[STORAGE_KEY_LOCAL_MAP] || changes[STORAGE_KEY_REMOTE_MAP]) {
+        mergeMaps();
+        scanVisibleArticles();
+      }
+    }
+  });
 
   function extractHandleFromArticle(article) {
     const userNameRoot = article.querySelector('[data-testid="User-Name"]');
@@ -135,14 +260,7 @@
       document;
     const handle = findHandleNearAboutFlow(profileRoot, row);
     if (!handle) return;
-    const h = normalizeHandle(handle);
-    if (!h) return;
-    handleToRegion.set(h, {
-      code: parsed.code,
-      emoji: parsed.emoji,
-      label: after,
-    });
-    scanVisibleArticles();
+    persistLocalRegion(handle, parsed.code, after);
   }
 
   function findHandleNearAboutFlow(root, connectedRow) {
@@ -186,6 +304,10 @@
     const userNameRoot = article.querySelector('[data-testid="User-Name"]');
     if (!userNameRoot) return;
 
+    const src =
+      info.source === "you" ? "You (saved)" : info.source === "crowd" ? "Crowd" : "";
+    const title = src ? `App Store: ${info.label || info.code} (${src})` : `App Store: ${info.label || info.code}`;
+
     const existingBadges = userNameRoot.querySelectorAll(`.${BADGE_CLASS}`);
     existingBadges.forEach((b, i) => {
       if (i > 0) b.remove();
@@ -194,7 +316,7 @@
     if (!badge) {
       badge = document.createElement("span");
       badge.className = BADGE_CLASS;
-      badge.setAttribute("title", `App Store: ${info.label}`);
+      badge.setAttribute("title", title);
       badge.textContent = info.emoji;
       const displayNameSpan = userNameRoot.querySelector("span span");
       if (displayNameSpan && displayNameSpan.parentElement) {
@@ -204,7 +326,7 @@
       }
     } else {
       badge.textContent = info.emoji;
-      badge.setAttribute("title", `App Store: ${info.label}`);
+      badge.setAttribute("title", title);
     }
 
     applyHide(article, info.code);
@@ -222,12 +344,15 @@
 
   function scanVisibleArticles() {
     const articles = document.querySelectorAll('article[data-testid="tweet"]');
+    const handlesNeedingCrowd = [];
     articles.forEach((article) => {
       const handle = extractHandleFromArticle(article);
       if (!handle) return;
       article.setAttribute(DATA_HANDLE, handle);
+      if (!handleToRegion.has(handle)) handlesNeedingCrowd.push(handle);
       ensureBadgeOnArticle(article, handle);
     });
+    if (handlesNeedingCrowd.length) scheduleCrowdLookup(handlesNeedingCrowd);
   }
 
   const mo = new MutationObserver((mutations) => {
@@ -242,11 +367,17 @@
         }
         if (el.matches?.('article[data-testid="tweet"]')) {
           const handle = extractHandleFromArticle(el);
-          if (handle) ensureBadgeOnArticle(el, handle);
+          if (handle) {
+            if (!handleToRegion.has(handle)) pendingCrowdLookup.add(handle);
+            ensureBadgeOnArticle(el, handle);
+          }
         }
         el.querySelectorAll?.('article[data-testid="tweet"]').forEach((a) => {
           const handle = extractHandleFromArticle(a);
-          if (handle) ensureBadgeOnArticle(a, handle);
+          if (handle) {
+            if (!handleToRegion.has(handle)) pendingCrowdLookup.add(handle);
+            ensureBadgeOnArticle(a, handle);
+          }
         });
       }
     }
@@ -255,6 +386,7 @@
 
   mo.observe(document.documentElement, { childList: true, subtree: true });
 
+  loadRegionMaps();
   loadHidden();
   scanVisibleArticles();
 })();

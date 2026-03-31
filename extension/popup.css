@@ -38,6 +38,117 @@ h2 {
   font-size: 12px;
 }
 
+.hint.small {
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.crowd-section,
+.data-section {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #2f3336;
+}
+
+.data-section {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: #1d9bf0;
+}
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  color: #71767b;
+  margin-bottom: 4px;
+}
+
+#crowd-api-base {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #2f3336;
+  border-radius: 6px;
+  background: #16181c;
+  color: #e7e9ea;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+#crowd-api-base:focus {
+  outline: 2px solid #1d9bf0;
+  outline-offset: 0;
+}
+
+.crowd-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#crowd-permission-btn {
+  padding: 6px 12px;
+  border: 1px solid #536471;
+  border-radius: 9999px;
+  background: transparent;
+  color: #e7e9ea;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#crowd-permission-btn:hover {
+  background: rgba(239, 243, 244, 0.1);
+}
+
+.crowd-status {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #71767b;
+  min-height: 1.2em;
+}
+
+.crowd-status.ok {
+  color: #00ba7c;
+}
+
+.crowd-status.err {
+  color: #f4212e;
+}
+
+.data-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.data-actions button {
+  padding: 8px 12px;
+  border: 1px solid #536471;
+  border-radius: 8px;
+  background: #16181c;
+  color: #e7e9ea;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.data-actions button:hover {
+  background: rgba(239, 243, 244, 0.08);
+}
+
 .add-form {
   display: flex;
   flex-wrap: wrap;

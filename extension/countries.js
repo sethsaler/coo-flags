@@ -271,5 +271,6 @@
   global.CooFlagsCountries = {
     parseConnectedVia,
     normalizeLabel,
+    flagFromCode: alpha2ToFlagEmoji,
   };
 })(typeof globalThis !== "undefined" ? globalThis : this);
