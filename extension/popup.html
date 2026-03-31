@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>App Store flags</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Hide by App Store region</h1>
+      <p class="hint">
+        Posts from accounts whose “Connected via” region matches a hidden flag are removed from the timeline after you open that account’s About page once (so the extension can read the region).
+      </p>
+      <form id="add-form" class="add-form">
+        <label for="region-input">Add region</label>
+        <input
+          id="region-input"
+          type="text"
+          placeholder="e.g. United States or US"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button type="submit" id="add-btn">Add</button>
+      </form>
+      <p id="error" class="error" hidden></p>
+      <section>
+        <h2>Hidden regions</h2>
+        <ul id="hidden-list" class="hidden-list"></ul>
+        <p id="empty" class="empty">No regions hidden.</p>
+      </section>
+    </main>
+    <script src="countries.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

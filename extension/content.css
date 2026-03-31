@@ -1,0 +1,14 @@
+.coo-flags-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  font-size: 0.95em;
+  line-height: 1;
+  vertical-align: middle;
+  user-select: none;
+  opacity: 0.92;
+}
+
+article.coo-flags-hidden {
+  display: none !important;
+}
