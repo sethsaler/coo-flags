@@ -1,0 +1,267 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 13px;
+  color: #e7e9ea;
+  background: #000;
+  min-width: 300px;
+  max-width: 360px;
+}
+
+main {
+  padding: 12px 14px 16px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+h2 {
+  margin: 14px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #71767b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hint {
+  margin: 0 0 12px;
+  line-height: 1.45;
+  color: #71767b;
+  font-size: 12px;
+}
+
+.hint.small {
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.crowd-section,
+.data-section {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #2f3336;
+}
+
+.data-section {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: #1d9bf0;
+}
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  color: #71767b;
+  margin-bottom: 4px;
+}
+
+#crowd-api-base {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #2f3336;
+  border-radius: 6px;
+  background: #16181c;
+  color: #e7e9ea;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+#crowd-api-base:focus {
+  outline: 2px solid #1d9bf0;
+  outline-offset: 0;
+}
+
+.crowd-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#crowd-permission-btn {
+  padding: 6px 12px;
+  border: 1px solid #536471;
+  border-radius: 9999px;
+  background: transparent;
+  color: #e7e9ea;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#crowd-permission-btn:hover {
+  background: rgba(239, 243, 244, 0.1);
+}
+
+.crowd-status {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #71767b;
+  min-height: 1.2em;
+}
+
+.crowd-status.ok {
+  color: #00ba7c;
+}
+
+.crowd-status.err {
+  color: #f4212e;
+}
+
+.data-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.data-actions button {
+  padding: 8px 12px;
+  border: 1px solid #536471;
+  border-radius: 8px;
+  background: #16181c;
+  color: #e7e9ea;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.data-actions button:hover {
+  background: rgba(239, 243, 244, 0.08);
+}
+
+.add-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.add-form label {
+  flex: 1 0 100%;
+  font-size: 11px;
+  color: #71767b;
+}
+
+.add-form input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #2f3336;
+  border-radius: 6px;
+  background: #16181c;
+  color: #e7e9ea;
+  font-size: 13px;
+}
+
+.add-form input:focus {
+  outline: 2px solid #1d9bf0;
+  outline-offset: 0;
+}
+
+.add-form button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 9999px;
+  background: #1d9bf0;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.add-form button:hover {
+  background: #1a8cd8;
+}
+
+.error {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #f4212e;
+}
+
+.hidden-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hidden-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #2f3336;
+}
+
+.hidden-list li:last-child {
+  border-bottom: none;
+}
+
+.hidden-list .meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.hidden-list .emoji {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.hidden-list .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hidden-list .code {
+  font-size: 11px;
+  color: #71767b;
+}
+
+.hidden-list button.remove {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border: 1px solid #536471;
+  border-radius: 9999px;
+  background: transparent;
+  color: #e7e9ea;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hidden-list button.remove:hover {
+  background: rgba(239, 243, 244, 0.1);
+}
+
+.empty {
+  margin: 0;
+  font-size: 12px;
+  color: #71767b;
+}
+
+.empty[hidden] {
+  display: none;
+}

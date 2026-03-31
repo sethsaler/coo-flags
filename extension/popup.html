@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>App Store flags</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Hide by App Store region</h1>
+      <p class="hint">
+        Flags come from your saved map, optional crowd lookup, or after you open <strong>About this account</strong> once for that profile. Your own lookups are saved in this browser. Turn on crowd mode to fetch and share anonymous handle→region votes with a server you trust.
+      </p>
+      <section class="crowd-section" aria-labelledby="crowd-heading">
+        <h2 id="crowd-heading">Crowd database</h2>
+        <label class="checkbox-row">
+          <input type="checkbox" id="crowd-enabled" />
+          <span>Use crowd API (lookup + submit)</span>
+        </label>
+        <label class="field-label" for="crowd-api-base">API base URL</label>
+        <input
+          id="crowd-api-base"
+          type="url"
+          placeholder="https://your-server.example.com"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <div class="crowd-actions">
+          <button type="button" id="crowd-permission-btn">Allow network access</button>
+        </div>
+        <p id="crowd-status" class="crowd-status" aria-live="polite"></p>
+      </section>
+      <form id="add-form" class="add-form">
+        <label for="region-input">Add region</label>
+        <input
+          id="region-input"
+          type="text"
+          placeholder="e.g. United States or US"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button type="submit" id="add-btn">Add</button>
+      </form>
+      <p id="error" class="error" hidden></p>
+      <section>
+        <h2>Hidden regions</h2>
+        <ul id="hidden-list" class="hidden-list"></ul>
+        <p id="empty" class="empty">No regions hidden.</p>
+      </section>
+      <section class="data-section">
+        <h2>Local data</h2>
+        <p class="hint small">Clears crowd cache only. Your own saved lookups stay unless you clear them too.</p>
+        <div class="data-actions">
+          <button type="button" id="clear-remote-btn">Clear crowd cache</button>
+          <button type="button" id="clear-local-btn">Clear my saved lookups</button>
+        </div>
+      </section>
+    </main>
+    <script src="countries.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

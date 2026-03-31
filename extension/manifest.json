@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "X App Store country flags",
+  "version": "1.1.0",
+  "description": "Shows App Store region flags next to accounts on X from “Connected via” in About this account, with optional hide-by-flag filtering.",
+  "permissions": ["storage", "permissions"],
+  "host_permissions": ["https://x.com/*", "https://twitter.com/*"],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "App Store flags"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["countries.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
